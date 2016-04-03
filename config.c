@@ -30,7 +30,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include "hash.h"
+#include "debug.h"
 #include "config.h"
 
 #define TABLE_SIZE	150
@@ -41,30 +41,12 @@
 
 #define END_LINE(c)	(c == '\n' || c == '\0')
 
-static hash_table_t *config_table = NULL;
+static config_opt_t *config_table = NULL;
 
 static char delim = '=';
 static char comment = '#';
 
 static int explode(const char *src, const char *tokens, char ***list, size_t * len);
-
-void config_error(const char *format, ...)
-{
-    char buf[255];
-    va_list vl;
-
-    va_start(vl, format);
-    vsprintf(buf, format, vl);
-
-    fprintf(stderr, "config error: %s\n", buf);
-    va_end(vl);
-}
-
-void config_init(void)
-{
-    if (!config_table)
-		config_table = new_hash_table(TABLE_SIZE);
-}
 
 config_opt_t *new_config_opt(const char *name, const char *value)
 {
@@ -86,9 +68,11 @@ config_opt_t *config_add_opt(const char *name, const char *value)
 {
     config_opt_t *opt;
 
-    opt = new_config_opt(name, value);
-
-    insert_hash_node(name, (void *)opt, config_table);
+	HASH_FIND_STR(config_table, name, opt);
+	if (opt == NULL) {
+		opt = new_config_opt(name, value);
+		HASH_ADD_STR(config_table, name, opt);
+	}
 
     return opt;
 }
@@ -98,13 +82,14 @@ config_opt_t *config_add_opt_array(const char *name, char **values,
 {
     config_opt_t *opt;
 
-    opt = new_config_opt(name, NULL);
-
-    opt->values = values;
-    opt->is_array = 1;
-    opt->size = size;
-
-    insert_hash_node(name, (void *)opt, config_table);
+	HASH_FIND_STR(config_table, name, opt);
+	if (opt == NULL) {
+		opt = new_config_opt(name, NULL);
+		opt->values = values;
+		opt->is_array = 1;
+		opt->size = size;
+		HASH_ADD_STR(config_table, name, opt);
+	}
 
     return opt;
 }
@@ -112,14 +97,8 @@ config_opt_t *config_add_opt_array(const char *name, char **values,
 config_opt_t *config_get_opt(const char *name)
 {
     config_opt_t *opt;
-    hash_node_t *node;
 
-    node = find_hash_node(name, config_table);
-
-    if (node)
-		opt = node->data;
-    else
-		opt = NULL;
+	HASH_FIND_STR(config_table, name, opt);
 
     return opt;
 }
@@ -199,11 +178,11 @@ static int parse_line(char *string)
     while ((c = *string++) != '\0') {
 		if (c == DQUOTE) {
 			if (!have_name) {
-				config_error("unexpected '%c'", DQUOTE);
+				INFO("unexpected '%c'", DQUOTE);
 				return 0;
 			}
 			if (have_quote && !END_LINE(*string)) {
-				config_error("unexpected '%c' after '%c'", *string, DQUOTE);
+				INFO("unexpected '%c' after '%c'", *string, DQUOTE);
 				return 0;
 			}
 			have_quote = !have_quote;
@@ -213,7 +192,7 @@ static int parse_line(char *string)
 				value[i++] = c;
 		} else if (c == delim) {
 			if (have_name) {
-				config_error("unexpected '%c'", delim);
+				INFO("unexpected '%c'", delim);
 				return 0;
 			}
 
@@ -224,14 +203,13 @@ static int parse_line(char *string)
 			break;
 		} else if (c == PAREN_OPEN) {
 			if (!have_name) {
-				config_error("unexpected '%c'", PAREN_OPEN);
+				INFO("unexpected '%c'", PAREN_OPEN);
 				return 0;
 			}
 			have_paren = 1;
 		} else if (c == PAREN_CLOSE) {
 			if (have_paren && !END_LINE(*string)) {
-				config_error("unexpected '%c' after '%c'", *string,
-						  PAREN_CLOSE);
+				INFO("unexpected '%c' after '%c'", *string, PAREN_CLOSE);
 				return 0;
 			}
 		} else {
@@ -266,7 +244,7 @@ int config_load(const char *filename)
 		return 0;
 
     while (fgets(line, sizeof(line), fp) != NULL) {
-		/* ignore lines that start with a comment character. */
+		/* ignore lines that start with a comment character */
 		if (*line == comment)
 			continue;
 
@@ -282,43 +260,16 @@ int config_load(const char *filename)
 
 void config_free_opt(config_opt_t * opt)
 {
-    size_t i;
-
-    if (opt->is_array) {
-		for (i = 0; i < opt->size; i++)
-			free(opt->values[i]);
-		free(opt->values);
-    } else {
-		free(opt->value);
-	}
-
-    free(opt->name);
-    free(opt);
+	HASH_DEL(config_table, opt);
+	free(opt);
 }
 
 void config_free(void)
 {
-    size_t i;
-    hash_node_t *node, *temp;
-    config_opt_t *opt;
-
-    for (i = 0; i < config_table->size; i++) {
-		node = config_table->nodes[i];
-
-		while (node) {
-			opt = (config_opt_t *) node->data;
-			config_free_opt(opt);
-
-			temp = node;
-			node = node->next;
-			free(temp->key);
-			free(temp);
-		}
-		config_table->nodes[i] = NULL;
-    }
-
-    free(config_table->nodes);
-    free(config_table);
+	config_opt_t *opt, *tmp;
+	HASH_ITER(hh, config_table, opt, tmp) {
+		config_free_opt(opt);
+	}
 }
 
 static int explode(const char *src, const char *tokens, char ***list, size_t * len)

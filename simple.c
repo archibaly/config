@@ -10,7 +10,6 @@ int main(int argc, char *argv[])
     if (argc != 2)
 		return 1;
 
-    config_init();
     config_load("simple.conf");
 
     opt = config_get_opt(argv[1]);

@@ -28,20 +28,23 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
+#include "uthash.h"
+
 typedef struct {
-    /* name of the option. */
-    char *name;
-    /* value of the option. NULL if this opt is an array. */
-    char *value;
-    /* non zero if this option is an array. */
-    int is_array;
-    /* array of values. */
-    char **values;
-    /* number of values. */
-    size_t size;
+	/* name of the option. */
+	char *name;
+	/* value of the option. NULL if this opt is an array. */
+	char *value;
+	/* non zero if this option is an array. */
+	int is_array;
+	/* array of values. */
+	char **values;
+	/* number of values. */
+	size_t size;
+	/* make this structure hashable */
+	ut_hash_handle hh;
 } config_opt_t;
 
-void config_init(void);
 int config_load(const char *);
 config_opt_t *config_get_opt(const char *);
 void config_free(void);

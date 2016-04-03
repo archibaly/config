@@ -1,19 +1,18 @@
 CC = gcc
 EXE = mail simple
-CFLAGS = -Wall
+CFLAGS = -Wall -DDEBUG
 
 all: mail simple
 
-mail: mail.o hash.o config.o
+mail: mail.o config.o
 	$(CC) -o $@ $^
 
-simple: simple.o hash.o config.o
+simple: simple.o config.o
 	$(CC) -o $@ $^
 
 mail.o: mail.c config.h
 simple.o: simple.c config.h
-hash.o: hash.c hash.h
-config.o: config.c config.h hash.h
+config.o: config.c config.h uthash.h
 
 clean:
-	rm -f $(EXE) mail.o simple.o hash.o config.o
+	rm -f $(EXE) mail.o simple.o config.o

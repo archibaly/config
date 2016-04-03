@@ -31,7 +31,6 @@ int main(void)
 {
     char *to, *subject, *message, *mail;
 
-    config_init();
     config_load("mail.conf");
 
     to = read("To:");
