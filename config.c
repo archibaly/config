@@ -260,8 +260,18 @@ int config_load(const char *filename)
 
 void config_free_opt(config_opt_t * opt)
 {
-	HASH_DEL(config_table, opt);
-	free(opt);
+    size_t i;
+
+    if (opt->is_array) {
+		for (i = 0; i < opt->size; i++)
+			free(opt->values[i]);
+		free(opt->values);
+    } else {
+		free(opt->value);
+	}
+
+    free(opt->name);
+    free(opt);
 }
 
 void config_free(void)

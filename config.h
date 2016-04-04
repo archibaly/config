@@ -31,15 +31,15 @@
 #include "uthash.h"
 
 typedef struct {
-	/* name of the option. */
+	/* name of the option */
 	char *name;
-	/* value of the option. NULL if this opt is an array. */
+	/* value of the option, NULL if this opt is an array */
 	char *value;
-	/* non zero if this option is an array. */
+	/* non zero if this option is an array */
 	int is_array;
-	/* array of values. */
+	/* array of values */
 	char **values;
-	/* number of values. */
+	/* number of values */
 	size_t size;
 	/* make this structure hashable */
 	ut_hash_handle hh;
