@@ -33,8 +33,6 @@
 #include "debug.h"
 #include "config.h"
 
-#define TABLE_SIZE	150
-
 #define DQUOTE		'"'
 #define PAREN_OPEN	'('
 #define PAREN_CLOSE	')'

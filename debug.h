@@ -4,16 +4,14 @@
 #ifdef DEBUG
 
 #include <stdio.h>
-#include <string.h>
-#include <errno.h>
 
-#define INFO(...) fprintf(stdout, __VA_ARGS__)
-#define ERROR(str) fprintf(stderr, str ": %s\n", strerror(errno))
+#define INFO(fmt, ...) fprintf(stdout, "%s(%d): " fmt "\n", __FILE__, __LINE__, ## __VA_ARGS__)
+#define ERROR(fmt, ...) fprintf(stderr, "%s(%d): " fmt "\n", __FILE__, __LINE__, ## __VA_ARGS__)
 
 #else
 
 #define INFO(...)
-#define ERROR(str)
+#define ERROR(...)
 
 #endif
 
