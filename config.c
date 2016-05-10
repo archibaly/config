@@ -374,33 +374,17 @@ static int explode(const char *src, const char *tokens, char ***list, size_t *le
 	char *str, *copy, **_list = NULL;
 
 	if (src == NULL || list == NULL || len == NULL)
-		return 0;
+		return -1;
 
 	*list = NULL;
 	*len = 0;
 
 	copy = strdup(src);
 
-	str = strtok(copy, tokens);
-
-	if (str == NULL) {
-		free(copy);
-		return -1;
-	}
-
-	if ((_list = malloc(sizeof(*_list))) == NULL)
-		exit(EXIT_FAILURE);
-
-	_list[*len] = strdup(str);
-
-	(*len)++;
-
-	while ((str = strtok(NULL, tokens)) != NULL) {
+	while ((str = strsep(&copy, tokens)) != NULL) {
 		if ((_list = realloc(_list, (*len + 1) * sizeof(*_list))) == NULL)
 			exit(EXIT_FAILURE);
-
 		_list[*len] = strdup(str);
-
 		(*len)++;
 	}
 
