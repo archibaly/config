@@ -25,8 +25,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.*
  */
 
-#ifndef _CONFIG_READ_H_
-#define _CONFIG_READ_H_
+#ifndef _CONFIG_H_
+#define _CONFIG_H_
 
 #include "uthash.h"
 
@@ -56,7 +56,7 @@ void config_free(void);
 int config_find_opt_value(const char *, const char *);
 char *config_get_value(const char *);
 void config_set_value(const char *, const char *);
-void config_set_value_array(const char *name, const char *value);
+void config_set_value_array(const char *, const char *);
 void config_print_opt(const char *);
 
-#endif /* _CONFIG_READ_H_ */
+#endif /* _CONFIG_H_ */

@@ -151,7 +151,6 @@ void config_set_value_array(const char *name, const char *value)
 	} else {
 		config_add_opt_array(name, values, len);
 	}
-
 }
 
 void config_set_delim(char d)
