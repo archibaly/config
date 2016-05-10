@@ -1,5 +1,4 @@
 #include <stdio.h>
-
 #include "config.h"
 
 int main(int argc, char *argv[])
@@ -8,7 +7,7 @@ int main(int argc, char *argv[])
     int i;
 
     if (argc != 2)
-		return 1;
+		return -1;
 
     config_load("simple.conf");
 
@@ -16,7 +15,7 @@ int main(int argc, char *argv[])
 
     if (opt == NULL) {
 		puts("not found");
-		return 1;
+		return -1;
     }
 
     if (opt->is_array)
@@ -24,6 +23,12 @@ int main(int argc, char *argv[])
 			printf("%d. %s\n", i + 1, opt->values[i]);
     else
 		printf("%s\n", opt->value);
+
+	config_set_value("name", "jacky liu");
+	config_set_value_array("family", "ben,lan,man,ting");
+	config_set_value_array("test", "123,456,N O,ing,xxx");
+
+	config_save("simple.conf");
 
     config_free();
 
