@@ -1,16 +1,12 @@
 CC = gcc
-EXE = mail simple
+EXE = simple
 CFLAGS = -Wall -DDEBUG
 
-all: mail simple
-
-mail: mail.o config.o
-	$(CC) -o $@ $^
+all: simple
 
 simple: simple.o config.o
 	$(CC) -o $@ $^
 
-mail.o: mail.c config.h
 simple.o: simple.c config.h
 config.o: config.c config.h uthash.h
 

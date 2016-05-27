@@ -31,32 +31,24 @@
 #include "uthash.h"
 
 /* example: */
-/* name = "jacky liu"*/
-/* family = (father,mother,"big sisters") */
+/* name = "jacky liu" */
+/* age = 25 */
 
 typedef struct {
 	/* name of the option */
 	char *name;
 	/* value of the option, NULL if this opt is an array */
 	char *value;
-	/* non zero if this option is an array */
-	int is_array;
-	/* array of values */
-	char **values;
-	/* number of values */
-	size_t size;
 	/* make this structure hashable */
 	ut_hash_handle hh;
 } config_opt_t;
 
 int config_load(const char *);
 int config_save(const char *);
-config_opt_t *config_get_opt(const char *);
 void config_free(void);
-int config_find_opt_value(const char *, const char *);
+void config_set_delim(char d);
 char *config_get_value(const char *);
 void config_set_value(const char *, const char *);
-void config_set_value_array(const char *, const char *);
 void config_print_opt(const char *);
 
 #endif /* _CONFIG_H_ */

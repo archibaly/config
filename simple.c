@@ -3,30 +3,18 @@
 
 int main(int argc, char *argv[])
 {
-    config_opt_t *opt;
-    int i;
-
-    if (argc != 2)
-		return -1;
-
     config_load("simple.conf");
 
-    opt = config_get_opt(argv[1]);
+	config_print_opt("name");
+	config_print_opt("age");
+	config_print_opt("sex");
 
-    if (opt == NULL) {
-		puts("not found");
-		return -1;
-    }
-
-    if (opt->is_array)
-		for (i = 0; i < opt->size; i++)
-			printf("%d. %s\n", i + 1, opt->values[i]);
-    else
-		printf("%s\n", opt->value);
+	printf("name = %s\n", config_get_value("name"));
+	printf("age = %s\n", config_get_value("age"));
 
 	config_set_value("name", "jacky liu");
-	config_set_value_array("family", "ben,lan,man,ting");
-	config_set_value_array("test", "123,456,N O,ing,xxx");
+	config_set_value("age", "25");
+	config_set_value("sex", "male");
 
 	config_save("simple.conf");
 
