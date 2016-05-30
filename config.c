@@ -130,7 +130,6 @@ static int parse_line(char *string)
 				debug("unexpected '%c'", delim);
 				return -1;
 			}
-
 			have_name = 1;
 			name[i] = '\0';
 			i = 0;
@@ -174,8 +173,8 @@ int config_load(const char *filename)
 		return -1;
 
 	while (fgets(line, sizeof(line), fp) != NULL) {
-		/* ignore lines that start with a comment character */
-		if (*line == comment)
+		/* ignore lines that start with a comment or '\n' character */
+		if (*line == comment || *line == '\n')
 			continue;
 
 		if (parse_line(line) < 0) {
