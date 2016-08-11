@@ -1,14 +1,14 @@
 CC = gcc
 EXE = simple
-CFLAGS = -Wall -DDEBUG
+CFLAGS = -Wall #-DDEBUG
 
 all: simple
 
-simple: simple.o config.o
+simple: main.o config.o hash.o
 	$(CC) -o $@ $^
 
-simple.o: simple.c config.h
-config.o: config.c config.h uthash.h
+%.o: %.c
+	$(CC) $(CFLAGS) -c $<
 
 clean:
-	rm -f $(EXE) mail.o simple.o config.o
+	rm -f *.o tags $(EXE)
