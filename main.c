@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 	printf("age = %s\n", config_get_value("age"));
 
 	config_set_value("name", "jacky");
-	config_set_value("age", "26");
+	config_set_value("age", "27");
 	config_set_value("sex", "male");
 
 	config_save("simple.conf");

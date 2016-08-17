@@ -14,6 +14,8 @@
 static char delim = '=';
 static char comment = '#';
 
+static struct hash_table *config_table;
+
 static config_opt_t *new_config_opt(const char *name, const char *value)
 {
 	config_opt_t *opt;
@@ -35,12 +37,12 @@ static config_opt_t *config_add_opt(const char *name, const char *value)
 	config_opt_t *opt;
 	struct hash_node *node;
 
-	int n = hash_find(name, &node, 1);
+	int n = hash_find(config_table, name, &node, 1);
 	debug("n = %d", n);
 
 	if (n == 0) {
 		opt = new_config_opt(name, value);
-		hash_add(opt->name, opt);
+		hash_add(config_table, opt->name, opt);
 	} else {
 		opt = node->value;
 	}
@@ -53,7 +55,7 @@ static config_opt_t *config_get_opt(const char *name)
 	config_opt_t *opt;
 	struct hash_node *node;
 
-	int n = hash_find(name, &node, 1);
+	int n = hash_find(config_table, name, &node, 1);
 	debug("n = %d", n);
 
 	if (n == 0)
@@ -178,7 +180,7 @@ int config_load(const char *filename)
 	FILE *fp;
 	char line[1024];
 
-	if (hash_init(HASH_NUM_BUCKETS, HASH_KEY_TYPE_STR) < 0)
+	if (!(config_table = hash_init(HASH_NUM_BUCKETS, HASH_KEY_TYPE_STR)))
 		return -1;
 
 	if (!(fp = fopen(filename, "r")))
@@ -219,14 +221,15 @@ int config_save(const char *filename)
 
 	int i;
 	struct hash_node *pos;
-	struct hash_head *head;
 	config_opt_t *opt;
-	
-	if (!(head = hash_get_head()))
-		goto out;
 
+	if (!config_table) {
+		fclose(fp);
+		return -1;
+	}
+	
 	for (i = 0; i < HASH_NUM_BUCKETS; i++) {
-		hash_for_each_entry(pos, head + i) {
+		hash_for_each_entry(pos, config_table->head + i) {
 			opt = pos->value;
 			if (has_space(opt->value))
 				sprintf(line, "%s %c \"%s\"\n", opt->name, delim, opt->value);
@@ -236,7 +239,6 @@ int config_save(const char *filename)
 		}
 	}
 
-out:
 	fclose(fp);
 	return 0;
 }
@@ -252,18 +254,17 @@ void config_free(void)
 {
 	int i;
 	struct hash_node *pos;
-	struct hash_head *head;
 	config_opt_t *opt;
 
-	if (!(head = hash_get_head()))
+	if (!(config_table))
 		return;
 
 	for (i = 0; i < HASH_NUM_BUCKETS; i++) {
-		hash_for_each_entry(pos, head + i) {
+		hash_for_each_entry(pos, config_table->head + i) {
 			opt = pos->value;
 			config_free_opt(opt);
 		}
 	}
 
-	hash_free();
+	hash_free(config_table);
 }
