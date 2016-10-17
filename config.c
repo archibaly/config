@@ -227,7 +227,7 @@ int config_save(const char *filename)
 		fclose(fp);
 		return -1;
 	}
-	
+
 	for (i = 0; i < HASH_NUM_BUCKETS; i++) {
 		hash_for_each_entry(pos, config_table->head + i) {
 			opt = pos->value;
