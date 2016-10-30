@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#include <math.h>
 
 #include "hash.h"
 #include "debug.h"
@@ -9,17 +8,11 @@
 /* 2^31 + 2^29 - 2^25 + 2^22 - 2^19 - 2^16 + 1 */
 #define GOLDEN_RATIO_PRIME_32 0x9e370001UL
 
-static inline uint32_t next_power_of_two(uint32_t x)
-{
-	return 1 << (32 - __builtin_clz(x - 1));
-}
-
-static uint32_t hash_int(uint32_t val, uint32_t bits)
+static uint32_t hash_int(uint32_t val, uint32_t size)
 {
 	uint32_t hash = val * GOLDEN_RATIO_PRIME_32;
 
-	/* high bits are more random, so use them */
-	return hash >> (32 - bits);
+	return hash % size;
 }
 
 static uint32_t hash_str(const char *val, uint32_t size)
@@ -41,7 +34,7 @@ struct hash_table *hash_init(int size, int key_type)
 	if (!(table = malloc(sizeof(struct hash_table))))
 		return NULL;
 
-	table->size = next_power_of_two(size);
+	table->size = size;
 	table->key_type = key_type;
 	if (!(table->head = malloc(sizeof(struct hash_head) * table->size))) {
 		free(table);
@@ -74,7 +67,7 @@ int hash_add(struct hash_table *table, void *key, void *value)
 	struct hash_node *node;
 
 	if (table->key_type == HASH_KEY_TYPE_INT) {
-		offset = hash_int(*(int *)key, log(table->size) / log(2));
+		offset = hash_int(*(int *)key, table->size);
 	} else if (table->key_type == HASH_KEY_TYPE_STR) {
 		offset = hash_str((char *)key, table->size);
 	} else {
@@ -99,7 +92,7 @@ static int hash_int_find(struct hash_table *table, int key,
 	if (!table)
 		return 0;
 
-	offset = hash_int(key, log(table->size) / log(2));
+	offset = hash_int(key, table->size);
 
 	hash_for_each_entry(pos, table->head + offset) {
 		if (*(int *)pos->key == key) {
@@ -150,14 +143,13 @@ int hash_find(struct hash_table *table, const void *key,
 	}
 }
 
-void hash_free_node(struct hash_node *node)
+void hash_del(struct hash_node *node)
 {
 	if (!node)
 		return;
 
-	if (!hlist_unhashed(&node->node)) {
+	if (!hlist_unhashed(&node->node))
 		hlist_del(&node->node);
-	}
 
 	free(node);
 }
@@ -173,7 +165,7 @@ void hash_free(struct hash_table *table)
 
 	for (i = 0; i < table->size; i++) {
 		hash_for_each_entry_safe(pos, tmp, table->head + i) {
-			hash_free_node(pos);
+			hash_del(pos);
 		}
 	}
 

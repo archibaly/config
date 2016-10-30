@@ -4,7 +4,8 @@
 
 int main(int argc, char *argv[])
 {
-    config_load("simple.conf");
+    if (config_load("simple.conf") < 0)
+		return -1;
 
 	config_print_opt("name");
 	config_print_opt("age");

@@ -1,6 +1,6 @@
 CC = gcc
 EXE = simple
-CFLAGS = -Wall #-DDEBUG
+CFLAGS = -Wall -DDEBUG
 LDFLAGS = -lm
 
 all: simple
